@@ -168,7 +168,7 @@ class PosixTimer(object):
         _librt.timer_settime(self.timerid, flags, setval, ctypes.byref(retval))
         return ((retval.it_value.tv_sec, retval.it_value.tv_nsec), (retval.it_interval.tv_sec, retval.it_interval.tv_nsec))
 
-    def set(self, value, interval = 0.0, flags = 0):
+    def set(self, value, interval = 0, flags = 0):
         (retvalue, retinterval) = self.set_precise(_float_to_second_nsec(value), _float_to_second_nsec(interval), flags)
         return (_second_nsec_to_float(retvalue), _second_nsec_to_float(retinterval))
 
@@ -183,6 +183,12 @@ class PosixTimer(object):
 
     def getoverrun(self):
         return _librt.timer_getoverrun(self.timerid)
+
+    def disarm_precise(self):
+        return self.set_precise((0,0))
+
+    def disarm(self):
+        return self.set(0)
 
     def callback(self):
         pass
@@ -203,7 +209,7 @@ if __name__ == "__main__":
             self.done.wait()
 
     foo = Foo(CLOCK_MONOTONIC)
-    print(foo.set(5.0))
+    print(foo.set(5))
 
     print("It should wake in 5 seconds.")
     print(foo.get())
