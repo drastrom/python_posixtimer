@@ -149,7 +149,9 @@ class PosixTimer(object):
         if timerid:
             _librt.timer_delete(self.timerid)
 
-    def set(self, (value_sec, value_nsec), (interval_sec, interval_nsec) = (0,0), flags = 0):
+    def set(self, value_sec_nsec, interval_sec_nsec = (0,0), flags = 0):
+        (value_sec, value_nsec) = value_sec_nsec
+        (interval_sec, interval_nsec) = interval_sec_nsec
         setval = _Struct_itimerspec()
         retval = _Struct_itimerspec()
         setval.it_value.tv_sec = value_sec
