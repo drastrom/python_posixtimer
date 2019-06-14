@@ -130,6 +130,13 @@ _librt.timer_settime.restype = _error_handler
 _librt.timer_gettime.argtypes = [_timer_t, ctypes.POINTER(_Struct_itimerspec)]
 _librt.timer_gettime.restype = _error_handler
 
+def _second_nsec_to_float(sec_nsec):
+    return sec_nsec[0] + sec_nsec[1]*1e-9
+
+def _float_to_second_nsec(value):
+    sec = int(value)
+    return (sec, int((value - sec)*1e9))
+
 class PosixTimer(object):
     callback_obj = _sigev_notify_function(lambda sigval_value: ctypes.cast(sigval_value.sival_ptr, ctypes.py_object).value.callback())
 
@@ -149,7 +156,7 @@ class PosixTimer(object):
         if timerid:
             _librt.timer_delete(timerid)
 
-    def set(self, value_sec_nsec, interval_sec_nsec = (0,0), flags = 0):
+    def set_precise(self, value_sec_nsec, interval_sec_nsec = (0,0), flags = 0):
         (value_sec, value_nsec) = value_sec_nsec
         (interval_sec, interval_nsec) = interval_sec_nsec
         setval = _Struct_itimerspec()
@@ -161,10 +168,18 @@ class PosixTimer(object):
         _librt.timer_settime(self.timerid, flags, setval, ctypes.byref(retval))
         return ((retval.it_value.tv_sec, retval.it_value.tv_nsec), (retval.it_interval.tv_sec, retval.it_interval.tv_nsec))
 
-    def get(self):
+    def set(self, value, interval = 0.0, flags = 0):
+        (retvalue, retinterval) = self.set_precise(_float_to_second_nsec(value), _float_to_second_nsec(interval), flags)
+        return (_second_nsec_to_float(retvalue), _second_nsec_to_float(retinterval))
+
+    def get_precise(self):
         retval = _Struct_itimerspec()
         _librt.timer_gettime(self.timerid, ctypes.byref(retval))
         return ((retval.it_value.tv_sec, retval.it_value.tv_nsec), (retval.it_interval.tv_sec, retval.it_interval.tv_nsec))
+
+    def get(self):
+        (retvalue, retinterval) = self.get_precise()
+        return (_second_nsec_to_float(retvalue), _second_nsec_to_float(retinterval))
 
     def getoverrun(self):
         return _librt.timer_getoverrun(self.timerid)
@@ -188,10 +203,11 @@ if __name__ == "__main__":
             self.done.wait()
 
     foo = Foo(CLOCK_MONOTONIC)
-    foo.set((5, 0))
+    print(foo.set(5.0))
 
     print("It should wake in 5 seconds.")
     print(foo.get())
+    print(foo.get_precise())
     foo.wait()
     print("Woken by CLOCK_MONOTONIC!")
     print(foo.getoverrun())
