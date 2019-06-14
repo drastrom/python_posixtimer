@@ -147,7 +147,7 @@ class PosixTimer(object):
     def __del__(self):
         timerid = getattr(self, "timerid", ctypes.c_void_p(0))
         if timerid:
-            _librt.timer_delete(self.timerid)
+            _librt.timer_delete(timerid)
 
     def set(self, value_sec_nsec, interval_sec_nsec = (0,0), flags = 0):
         (value_sec, value_nsec) = value_sec_nsec
