@@ -34,6 +34,8 @@ __all__ = [
         'PosixTimer'
 ]
 
+if not sys.platform.startswith("linux"):
+    raise NotImplementedError("Only implemented for Linux")
 
 # C libraries
 _librt = ctypes.CDLL("librt.so", use_errno=True)
