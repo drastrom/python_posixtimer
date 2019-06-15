@@ -22,6 +22,19 @@ import ctypes
 import errno
 import sys
 
+__all__ = [
+        # Clock IDs
+        'CLOCK_REALTIME', 'CLOCK_MONOTONIC', 'CLOCK_PROCESS_CPUTIME_ID',
+        'CLOCK_THREAD_CPUTIME_ID', 'CLOCK_MONOTONIC_RAW',
+        'CLOCK_REALTIME_COARSE', 'CLOCK_MONOTONIC_COARSE', 'CLOCK_BOOTTIME',
+        'CLOCK_REALTIME_ALARM', 'CLOCK_BOOTTIME_ALARM', 'CLOCK_TAI',
+        # Flags for timer_settime
+        'TIMER_ABSTIME',
+        # Classes
+        'PosixTimer'
+]
+
+
 # C libraries
 _librt = ctypes.CDLL("librt.so", use_errno=True)
 
@@ -32,23 +45,23 @@ _librt = ctypes.CDLL("librt.so", use_errno=True)
 # ... but it does let you do it from Python. ;)
 
 # Types
-clockid_t = ctypes.c_int32
+_clockid_t = ctypes.c_int32
 _pid_t = ctypes.c_int32
 _timer_t = ctypes.c_void_p
 _time_t = ctypes.c_long
 
 # Clock IDs
-CLOCK_REALTIME = clockid_t(0)
-CLOCK_MONOTONIC = clockid_t(1)
-CLOCK_PROCESS_CPUTIME_ID = clockid_t(2)
-CLOCK_THREAD_CPUTIME_ID = clockid_t(3)
-CLOCK_MONOTONIC_RAW = clockid_t(4)
-CLOCK_REALTIME_COARSE = clockid_t(5)
-CLOCK_MONOTONIC_COARSE = clockid_t(6)
-CLOCK_BOOTTIME = clockid_t(7)
-CLOCK_REALTIME_ALARM = clockid_t(8)
-CLOCK_BOOTTIME_ALARM = clockid_t(9)
-CLOCK_TAI = clockid_t(11)
+CLOCK_REALTIME = _clockid_t(0)
+CLOCK_MONOTONIC = _clockid_t(1)
+CLOCK_PROCESS_CPUTIME_ID = _clockid_t(2)
+CLOCK_THREAD_CPUTIME_ID = _clockid_t(3)
+CLOCK_MONOTONIC_RAW = _clockid_t(4)
+CLOCK_REALTIME_COARSE = _clockid_t(5)
+CLOCK_MONOTONIC_COARSE = _clockid_t(6)
+CLOCK_BOOTTIME = _clockid_t(7)
+CLOCK_REALTIME_ALARM = _clockid_t(8)
+CLOCK_BOOTTIME_ALARM = _clockid_t(9)
+CLOCK_TAI = _clockid_t(11)
 
 # Flags for timer_settime
 TIMER_ABSTIME = ctypes.c_int(1)
@@ -117,9 +130,9 @@ def _error_handler(value):
         raise OSError(err, os.strerror(err))
     return value
 
-_librt.timer_create.argtypes = [clockid_t, ctypes.POINTER(_Struct_sigevent), ctypes.POINTER(_timer_t)]
+_librt.timer_create.argtypes = [_clockid_t, ctypes.POINTER(_Struct_sigevent), ctypes.POINTER(_timer_t)]
 _librt.timer_create.restype = _error_handler
-_librt.clock_gettime.argtypes = [clockid_t, ctypes.POINTER(_Struct_timespec)]
+_librt.clock_gettime.argtypes = [_clockid_t, ctypes.POINTER(_Struct_timespec)]
 _librt.clock_gettime.restype = _error_handler
 _librt.timer_delete.argtypes = [_timer_t]
 _librt.timer_delete.restype = _error_handler
