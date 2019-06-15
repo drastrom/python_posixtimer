@@ -205,8 +205,14 @@ if __name__ == "__main__":
         def callback(self):
             self.done.set()
 
-        def wait(self):
-            self.done.wait()
+        def wait(self, timeout=None):
+            self.done.wait(timeout)
+
+        def clear(self):
+            self.done.clear()
+
+        def did_fire(self):
+            return self.done.isSet()
 
     foo = Foo(CLOCK_MONOTONIC)
     print(foo.set(5))
@@ -214,8 +220,25 @@ if __name__ == "__main__":
     print("It should wake in 5 seconds.")
     print(foo.get())
     print(foo.get_precise())
-    foo.wait()
-    print("Woken by CLOCK_MONOTONIC!")
+    foo.wait(10)
+    if foo.did_fire():
+        print("Woken by CLOCK_MONOTONIC!")
+        foo.clear()
+    else:
+        print("Timed out!")
     print(foo.getoverrun())
+    print(foo.set(5))
+
+    print("It should wake in 5 seconds.")
+    print(foo.get())
+    print(foo.get_precise())
+    print("Disarming")
+    print(foo.disarm())
+    foo.wait(10)
+    if foo.did_fire():
+        print("Woken by CLOCK_MONOTONIC!")
+        foo.clear()
+    else:
+        print("Timed out!")
     # to test that __del__ works when refcount gets to 0
     del foo
